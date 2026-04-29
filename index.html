@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BenAI</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<h1>🤖 BenAI</h1>
+<div id="chat-box"></div>
+<input id="message" placeholder="Type a message..." />
+<button onclick="sendMessage()">Send</button>
+
+<script>
+async function sendMessage() {
+    let message = document.getElementById("message").value;
+
+    let res = await fetch("/chat", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({message})
+    });
+
+    let data = await res.json();
+
+    document.getElementById("chat-box").innerHTML +=
+        "<p><b>You:</b> " + message + "</p>" +
+        "<p><b>BenAI:</b> " + data.reply + "</p>";
+}
+</script>
+</body>
+</html>

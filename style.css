@@ -1,0 +1,15 @@
+body {
+    font-family: Arial;
+    text-align: center;
+    background: #111;
+    color: white;
+}
+input { width: 300px; padding: 10px; }
+button { padding: 10px; }
+#chat-box {
+    width: 500px;
+    margin: auto;
+    min-height: 200px;
+    background: #222;
+    padding: 20px;
+}
