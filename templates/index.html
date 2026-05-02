@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>BenAI</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="app">
+
+<div class="sidebar">
+<h2>BenAI</h2>
+
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="signup()">Sign Up</button>
+<button onclick="login()">Login</button>
+
+<hr>
+
+<input id="roomName" placeholder="Room / Friend">
+<button onclick="joinRoom()">Join</button>
+
+<button onclick="addFriend()">Add Friend</button>
+
+<div id="friends"></div>
+
+</div>
+
+<div class="chat">
+<div id="chat"></div>
+
+<div class="input">
+<input id="msg" placeholder="Type..." onkeydown="if(event.key==='Enter') send()">
+<button onclick="send()">Send</button>
+<button onclick="img()">Image</button>
+<button onclick="voice()">🎤</button>
+</div>
+
+</div>
+
+</div>
+
+<script>
+let room = "default";
+
+function add(u, t){
+chat.innerHTML += `<p><b>${u}:</b> ${t}</p>`;
+}
+
+async function send(){
+let m = msg.value;
+if(!m) return;
+
+add("You", m);
+msg.value = "";
+
+let r = await fetch("/chat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({message:m, room})
+});
+
+let d = await r.json();
+add("BenAI", d.reply);
+}
+
+function joinRoom(){
+room = roomName.value;
+load();
+}
+
+async function load(){
+let r = await fetch("/history?room=" + room);
+let d = await r.json();
+chat.innerHTML = "";
+d.forEach(x=>{
+add(x[0], x[1]);
+add("BenAI", x[2]);
+});
+}
+
+async function addFriend(){
+let name = roomName.value;
+await fetch("/add_friend",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({friend:name})
+});
+loadFriends();
+}
+
+async function loadFriends(){
+let r = await fetch("/friends");
+let d = await r.json();
+
+friends.innerHTML="";
+d.forEach(f=>{
+friends.innerHTML += `<div onclick="openDM('${f[0]}')">${f[0]}</div>`;
+});
+}
+
+function openDM(name){
+room = name;
+load();
+}
+
+function img(){
+let p = prompt("Image idea:");
+fetch("/image",{method:"POST",headers:{"Content-Type":"application/json"},
+body:JSON.stringify({prompt:p})})
+.then(r=>r.json()).then(d=>add("BenAI", `<img src="${d.url}" width=200>`));
+}
+
+function voice(){
+let r = new(window.SpeechRecognition||webkitSpeechRecognition)();
+r.start();
+r.onresult = e => msg.value = e.results[0][0].transcript;
+}
+
+setInterval(load, 3000);
+</script>
+
+</body>
+</html>
